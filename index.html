@@ -1,0 +1,148 @@
+<style>
+  /* Cat */
+  #cat {
+    position: fixed;
+    bottom: 50px;
+    left: 50px;
+    width: 100px;
+    height: 100px;
+    cursor: grab;
+    user-select: none;
+    z-index: 9999;
+    transition: all 0.6s ease;
+  }
+
+  #cat:active {
+    cursor: grabbing;
+  }
+
+  /* Cat body mockup */
+  #cat-body {
+    width: 100%;
+    height: 100%;
+    background: black;
+    border-radius: 50%;
+    position: relative;
+  }
+
+  /* Eyes */
+  .eye {
+    width: 25px;
+    height: 25px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 30px;
+  }
+  .eye.left { left: 20px; }
+  .eye.right { right: 20px; }
+  .pupil {
+    width: 10px;
+    height: 10px;
+    background: black;
+    border-radius: 50%;
+    position: relative;
+    top: 7px;
+    left: 7px;
+    transition: transform 0.1s;
+  }
+
+  /* Logo */
+  #logo {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 120px;
+    height: 60px;
+    background: orange;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    z-index: 10000;
+    overflow: hidden; /* so cat can peek out */
+  }
+</style>
+
+<!-- Logo -->
+<div id="logo">My Logo</div>
+
+<!-- Cat -->
+<div id="cat">
+  <div id="cat-body">
+    <div class="eye left"><div class="pupil"></div></div>
+    <div class="eye right"><div class="pupil"></div></div>
+  </div>
+</div>
+
+<script>
+const cat = document.getElementById("cat");
+const pupils = document.querySelectorAll(".pupil");
+const logo = document.getElementById("logo");
+
+let offsetX, offsetY, dragging = false;
+let hiding = false; // track if cat is hiding
+
+// ---- Eyes follow mouse ----
+document.addEventListener("mousemove", e => {
+  pupils.forEach(pupil => {
+    const rect = pupil.getBoundingClientRect();
+    const dx = e.clientX - rect.left;
+    const dy = e.clientY - rect.top;
+    const angle = Math.atan2(dy, dx);
+    const x = Math.cos(angle) * 5;
+    const y = Math.sin(angle) * 5;
+    pupil.style.transform = `translate(${x}px, ${y}px)`;
+  });
+
+  // ---- Detect if mouse is near the cat ----
+  const catRect = cat.getBoundingClientRect();
+  const catCenterX = catRect.left + catRect.width/2;
+  const catCenterY = catRect.top + catRect.height/2;
+  const distX = e.clientX - catCenterX;
+  const distY = e.clientY - catCenterY;
+  const distance = Math.sqrt(distX*distX + distY*distY);
+
+  if (distance < 120 && !hiding) {
+    // run and hide in logo
+    const logoRect = logo.getBoundingClientRect();
+    cat.style.left = (logoRect.left + logoRect.width/2 - 50) + "px";
+    cat.style.top = (logoRect.top + logoRect.height/2 - 50) + "px";
+    cat.style.opacity = "0";
+    hiding = true;
+
+    // after hiding, peek out slowly
+    setTimeout(() => {
+      cat.style.opacity = "1";
+      cat.style.left = (logoRect.right - 30) + "px"; // peek out on right edge
+      cat.style.top = (logoRect.top + logoRect.height/2 - 50) + "px";
+    }, 1200); // delay before peeking
+  } 
+  else if (distance >= 180 && hiding) {
+    // cat returns to normal after peeking
+    hiding = false;
+    cat.style.opacity = "1";
+  }
+});
+
+// ---- Dragging ----
+cat.addEventListener("mousedown", e => {
+  dragging = true;
+  offsetX = e.clientX - cat.offsetLeft;
+  offsetY = e.clientY - cat.offsetTop;
+});
+document.addEventListener("mousemove", e => {
+  if (dragging) {
+    cat.style.left = (e.clientX - offsetX) + "px";
+    cat.style.top = (e.clientY - offsetY) + "px";
+  }
+});
+document.addEventListener("mouseup", () => dragging = false);
+
+// ---- Pet wiggle effect ----
+cat.addEventListener("click", () => {
+  cat.style.transform = "rotate(10deg)";
+  setTimeout(() => cat.style.transform = "rotate(-10deg") , 100);
+  setTimeout(() => cat.style.transform = "rotate(0deg") , 200);
+});
+</script>

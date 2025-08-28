@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Cat with Logo</title>
+  <title>Cat Sneak Peek</title>
   <style>
     body {
       margin: 0;
@@ -23,17 +23,20 @@
       color: white;
       position: relative;
       z-index: 2;
+      display: inline-block;
+      overflow: hidden; /* important: lets cat hide *behind* */
     }
 
     /* Cat container */
     #cat {
-      position: fixed;
+      position: absolute;
       width: 80px;
       height: 80px;
-      top: 200px;
-      left: 200px;
+      bottom: 0; /* baseline inside logo */
+      left: 50%;
+      transform: translateX(-50%);
       cursor: grab;
-      transition: left 0.8s ease, top 0.8s ease;
+      transition: left 0.6s ease, top 0.6s ease, transform 0.6s ease;
       z-index: 1;
     }
 
@@ -101,15 +104,16 @@
   </style>
 </head>
 <body>
-  <div id="logo">Jackfolio</div>
-
-  <div id="cat">
-    <div class="head">
-      <div class="ear left"></div>
-      <div class="ear right"></div>
-      <div class="eye left"><div class="pupil"></div></div>
-      <div class="eye right"><div class="pupil"></div></div>
-      <div class="tail"></div>
+  <div id="logo">
+    Jackfolio
+    <div id="cat">
+      <div class="head">
+        <div class="ear left"></div>
+        <div class="ear right"></div>
+        <div class="eye left"><div class="pupil"></div></div>
+        <div class="eye right"><div class="pupil"></div></div>
+        <div class="tail"></div>
+      </div>
     </div>
   </div>
 
@@ -118,10 +122,7 @@
   const pupils = document.querySelectorAll(".pupil");
   const logo = document.getElementById("logo");
 
-  let offsetX, offsetY, dragging = false;
   let hiding = false;
-  let hideTimer = null;
-  let resetTimer = null;
 
   // ---- Eyes follow mouse ----
   document.addEventListener("mousemove", e => {
@@ -135,78 +136,54 @@
       pupil.style.transform = `translate(${x}px, ${y}px)`;
     });
 
-    // ---- Hide in logo if mouse is near cat ----
-    const catRect = cat.getBoundingClientRect();
-    const catCenterX = catRect.left + catRect.width/2;
-    const catCenterY = catRect.top + catRect.height/2;
-    const distX = e.clientX - catCenterX;
-    const distY = e.clientY - catCenterY;
-    const distance = Math.sqrt(distX*distX + distY*distY);
-
-    if (distance < 120 && !hiding) {
+    // if cursor is near logo, hide
+    const logoRect = logo.getBoundingClientRect();
+    const cx = e.clientX;
+    const cy = e.clientY;
+    if (cx > logoRect.left-100 && cx < logoRect.right+100 && cy > logoRect.top-100 && cy < logoRect.bottom+100) {
       hideInLogo();
-    } else if (distance >= 180 && hiding) {
-      peekFromLogo();
     }
   });
 
   function hideInLogo() {
-    const logoRect = logo.getBoundingClientRect();
-    // hide at bottom of the text
-    cat.style.left = (logoRect.left + logoRect.width/2 - 40) + "px";
-    cat.style.top = (logoRect.top + logoRect.height - 10) + "px";
+    if (hiding) return;
     hiding = true;
+    cat.style.transform = "translateX(-50%) translateY(100%)"; // slide down inside text
 
-    // Peek after 2s
-    hideTimer = setTimeout(() => {
-      cat.style.top = (logoRect.top + logoRect.height/2) + "px";
+    // Peek sneak sideways after 2s
+    setTimeout(() => {
+      cat.style.transform = "translateX(-20%) translateY(40%)"; // sneaky peek from left
     }, 2000);
 
-    // Auto reset after 10s
-    resetTimer = setTimeout(() => {
+    // back to hiding after 1s
+    setTimeout(() => {
+      cat.style.transform = "translateX(-50%) translateY(100%)";
+    }, 3500);
+
+    // reset to random after 10s
+    setTimeout(() => {
       hiding = false;
       randomPopUp();
     }, 10000);
   }
 
-  function peekFromLogo() {
-    clearTimeout(hideTimer);
-    clearTimeout(resetTimer);
-    const logoRect = logo.getBoundingClientRect();
-    cat.style.top = (logoRect.top + logoRect.height/2) + "px";
-    hiding = false;
-  }
-
-  // ---- Dragging ----
-  cat.addEventListener("mousedown", e => {
-    dragging = true;
-    offsetX = e.clientX - cat.offsetLeft;
-    offsetY = e.clientY - cat.offsetTop;
-    cat.style.transition = "none";
-  });
-  document.addEventListener("mousemove", e => {
-    if (dragging) {
-      cat.style.left = (e.clientX - offsetX) + "px";
-      cat.style.top = (e.clientY - offsetY) + "px";
-    }
-  });
-  document.addEventListener("mouseup", () => {
-    dragging = false;
-    cat.style.transition = "left 0.8s ease, top 0.8s ease";
-  });
-
   // ---- Random pop-up ----
   function randomPopUp() {
-    if (!dragging && !hiding) {
-      const screenW = window.innerWidth - 100;
-      const screenH = window.innerHeight - 100;
-      const randomX = Math.random() * screenW;
-      const randomY = Math.random() * screenH;
-      cat.style.left = randomX + "px";
-      cat.style.top = randomY + "px";
-    }
-    setTimeout(randomPopUp, 4000 + Math.random() * 3000);
+    if (hiding) return;
+    const screenW = window.innerWidth - 100;
+    const screenH = window.innerHeight - 100;
+    const randomX = Math.random() * screenW;
+    const randomY = Math.random() * screenH;
+    cat.style.position = "fixed"; // escape logo
+    cat.style.left = randomX + "px";
+    cat.style.top = randomY + "px";
+    cat.style.transform = "none";
+    setTimeout(() => {
+      hideInLogo();
+    }, 5000 + Math.random()*4000);
   }
+
+  // start random pop-up after a delay
   setTimeout(randomPopUp, 3000);
   </script>
 </body>

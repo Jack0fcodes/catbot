@@ -10,17 +10,22 @@
       background: #222;
       overflow: hidden;
     }
+
+    /* Logo (replace placeholder with your real logo later) */
     #logo {
       position: fixed;
       top: 20px;
       left: 20px;
       width: 100px;
       height: 100px;
-      background: #444;
       border-radius: 50%;
+      overflow: hidden;
       z-index: 2;
-      overflow: hidden; /* so cat can slide behind */
+      background: url('https://placekitten.com/150/150') no-repeat center/cover;
+      border: 3px solid #fff;
     }
+
+    /* Cat body */
     #cat {
       position: fixed;
       width: 80px;
@@ -36,6 +41,8 @@
       transition: left 0.8s ease, top 0.8s ease;
       z-index: 1;
     }
+
+    /* Eyes */
     .eye {
       width: 20px;
       height: 20px;
@@ -55,6 +62,25 @@
       left: 5px;
       transition: transform 0.1s linear;
     }
+
+    /* Tail */
+    #tail {
+      position: absolute;
+      width: 40px;
+      height: 15px;
+      background: #fff;
+      border-radius: 50% 50% 50% 50%;
+      top: 30px;
+      left: -30px; /* stick out to the left */
+      transform-origin: right center;
+      animation: wiggle 1s infinite ease-in-out;
+    }
+    @keyframes wiggle {
+      0% { transform: rotate(15deg); }
+      50% { transform: rotate(-15deg); }
+      100% { transform: rotate(15deg); }
+    }
+
     @keyframes purr {
       0% { transform: scale(1); }
       50% { transform: scale(1.1); }
@@ -68,7 +94,9 @@
 </head>
 <body>
   <div id="logo"></div>
+
   <div id="cat">
+    <div id="tail"></div>
     <div class="eye"><div class="pupil"></div></div>
     <div class="eye"><div class="pupil"></div></div>
   </div>
@@ -133,7 +161,6 @@
     clearTimeout(hideTimer);
     clearTimeout(resetTimer);
     const logoRect = logo.getBoundingClientRect();
-    // Slide out to peek
     cat.style.top = (logoRect.top + logoRect.height/2 - 40) + "px";
     hiding = false;
   }

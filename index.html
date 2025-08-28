@@ -1,110 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>CatBot</title>
-<style>
-  body {
-    margin: 0;
-    height: 100vh;
-    background: #f0f0f0;
-  }
-
-  /* Logo */
-  #logo {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    width: 120px;
-    height: 60px;
-    background: orange;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    z-index: 1000;
-    overflow: hidden;
-  }
-
-  /* Cat */
-  #cat {
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    left: 200px;
-    top: 200px;
-    cursor: grab;
-    user-select: none;
-    z-index: 999;
-    transition: left 0.8s ease, top 0.8s ease, opacity 0.5s ease;
-    animation: breathe 3s infinite ease-in-out;
-  }
-
-  #cat:active {
-    cursor: grabbing;
-  }
-
-  /* Breathing animation */
-  @keyframes breathe {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-  }
-
-  @keyframes purr {
-    0% { transform: scale(1); }
-    25% { transform: scale(1.1); }
-    50% { transform: scale(0.95); }
-    75% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-  }
-
-  /* Cat body */
-  #cat-body {
-    width: 100%;
-    height: 100%;
-    background: black;
-    border-radius: 50%;
-    position: relative;
-  }
-
-  /* Eyes */
-  .eye {
-    width: 25px;
-    height: 25px;
-    background: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 30px;
-  }
-  .eye.left { left: 20px; }
-  .eye.right { right: 20px; }
-
-  .pupil {
-    width: 10px;
-    height: 10px;
-    background: black;
-    border-radius: 50%;
-    position: relative;
-    top: 7px;
-    left: 7px;
-    transition: transform 0.1s;
-  }
-</style>
-</head>
-<body>
-
-<!-- Logo -->
-<div id="logo">My Logo</div>
-
-<!-- Cat -->
-<div id="cat">
-  <div id="cat-body">
-    <div class="eye left"><div class="pupil"></div></div>
-    <div class="eye right"><div class="pupil"></div></div>
-  </div>
-</div>
-
 <script>
 const cat = document.getElementById("cat");
 const pupils = document.querySelectorAll(".pupil");
@@ -125,7 +18,7 @@ document.addEventListener("mousemove", e => {
     pupil.style.transform = `translate(${x}px, ${y}px)`;
   });
 
-  // ---- Detect if mouse is near the cat ----
+  // ---- Hide in logo if mouse is too close ----
   const catRect = cat.getBoundingClientRect();
   const catCenterX = catRect.left + catRect.width/2;
   const catCenterY = catRect.top + catRect.height/2;
@@ -134,14 +27,12 @@ document.addEventListener("mousemove", e => {
   const distance = Math.sqrt(distX*distX + distY*distY);
 
   if (distance < 120 && !hiding) {
-    // run and hide in logo
     const logoRect = logo.getBoundingClientRect();
     cat.style.left = (logoRect.left + logoRect.width/2 - 50) + "px";
     cat.style.top = (logoRect.top + logoRect.height/2 - 50) + "px";
     cat.style.opacity = "0";
     hiding = true;
 
-    // after hiding, peek out slowly from right side
     setTimeout(() => {
       cat.style.transition = "left 1.5s ease, top 1.5s ease, opacity 1s ease";
       cat.style.opacity = "1";
@@ -159,7 +50,7 @@ cat.addEventListener("mousedown", e => {
   dragging = true;
   offsetX = e.clientX - cat.offsetLeft;
   offsetY = e.clientY - cat.offsetTop;
-  cat.style.transition = "none"; // disable smooth move while dragging
+  cat.style.transition = "none";
 });
 document.addEventListener("mousemove", e => {
   if (dragging) {
@@ -172,11 +63,28 @@ document.addEventListener("mouseup", () => {
   cat.style.transition = "left 0.8s ease, top 0.8s ease, opacity 0.5s ease";
 });
 
-// ---- Pet bounce effect ----
+// ---- Pet bounce ----
 cat.addEventListener("click", () => {
   cat.style.animation = "purr 0.4s ease";
   setTimeout(() => cat.style.animation = "breathe 3s infinite ease-in-out", 400);
 });
+
+// ---- Random pop-up ----
+function randomPopUp() {
+  if (!dragging && !hiding) {  // only if not dragging or hiding
+    const screenW = window.innerWidth - 100;
+    const screenH = window.innerHeight - 100;
+    const randomX = Math.random() * screenW;
+    const randomY = Math.random() * screenH;
+
+    cat.style.transition = "left 0.8s ease, top 0.8s ease, opacity 0.5s ease";
+    cat.style.left = randomX + "px";
+    cat.style.top = randomY + "px";
+  }
+  // schedule next pop-up
+  setTimeout(randomPopUp, 4000 + Math.random() * 3000); 
+}
+
+// start random movement
+setTimeout(randomPopUp, 3000);
 </script>
-</body>
-</html>

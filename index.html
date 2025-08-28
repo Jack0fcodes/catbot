@@ -2,39 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>CatBot</title>
+  <title>Cat with Logo</title>
   <style>
     body {
       margin: 0;
       height: 100vh;
       background: #222;
       overflow: hidden;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 40px;
+      font-family: sans-serif;
     }
 
-    /* Logo (replace placeholder with your real logo later) */
+    /* Logo text */
     #logo {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      overflow: hidden;
+      font-size: 60px;
+      font-weight: bold;
+      color: white;
+      position: relative;
       z-index: 2;
-      background: url('https://placekitten.com/150/150') no-repeat center/cover;
-      border: 3px solid #fff;
     }
 
-    /* Cat body */
+    /* Cat container */
     #cat {
       position: fixed;
       width: 80px;
       height: 80px;
-      background: #fff;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       top: 200px;
       left: 200px;
       cursor: grab;
@@ -42,20 +37,42 @@
       z-index: 1;
     }
 
-    /* Eyes */
-    .eye {
+    /* Head */
+    .head {
+      width: 80px;
+      height: 80px;
+      background: #fff;
+      border-radius: 50%;
+      position: relative;
+    }
+
+    /* Ears */
+    .ear {
       width: 20px;
       height: 20px;
-      background: #000;
-      border-radius: 50%;
-      margin: 0 5px;
-      position: relative;
-      overflow: hidden;
-    }
-    .pupil {
-      width: 10px;
-      height: 10px;
       background: #fff;
+      position: absolute;
+      top: -10px;
+      clip-path: polygon(50% 0, 0 100%, 100% 100%);
+    }
+    .ear.left { left: 10px; }
+    .ear.right { right: 10px; }
+
+    /* Eyes */
+    .eye {
+      width: 18px;
+      height: 18px;
+      background: black;
+      border-radius: 50%;
+      position: absolute;
+      top: 25px;
+    }
+    .eye.left { left: 20px; }
+    .eye.right { right: 20px; }
+    .pupil {
+      width: 8px;
+      height: 8px;
+      background: white;
       border-radius: 50%;
       position: absolute;
       top: 5px;
@@ -64,14 +81,14 @@
     }
 
     /* Tail */
-    #tail {
-      position: absolute;
+    .tail {
       width: 40px;
-      height: 15px;
+      height: 12px;
       background: #fff;
-      border-radius: 50% 50% 50% 50%;
-      top: 30px;
-      left: -30px; /* stick out to the left */
+      border-radius: 50%;
+      position: absolute;
+      bottom: 20px;
+      left: -30px;
       transform-origin: right center;
       animation: wiggle 1s infinite ease-in-out;
     }
@@ -81,24 +98,19 @@
       100% { transform: rotate(15deg); }
     }
 
-    @keyframes purr {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-    @keyframes breathe {
-      0%,100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
   </style>
 </head>
 <body>
-  <div id="logo"></div>
+  <div id="logo">Jackfolio</div>
 
   <div id="cat">
-    <div id="tail"></div>
-    <div class="eye"><div class="pupil"></div></div>
-    <div class="eye"><div class="pupil"></div></div>
+    <div class="head">
+      <div class="ear left"></div>
+      <div class="ear right"></div>
+      <div class="eye left"><div class="pupil"></div></div>
+      <div class="eye right"><div class="pupil"></div></div>
+      <div class="tail"></div>
+    </div>
   </div>
 
   <script>
@@ -118,12 +130,12 @@
       const dx = e.clientX - (rect.left + rect.width / 2);
       const dy = e.clientY - (rect.top + rect.height / 2);
       const angle = Math.atan2(dy, dx);
-      const x = Math.cos(angle) * 5;
-      const y = Math.sin(angle) * 5;
+      const x = Math.cos(angle) * 4;
+      const y = Math.sin(angle) * 4;
       pupil.style.transform = `translate(${x}px, ${y}px)`;
     });
 
-    // ---- Hide in logo if mouse is too close ----
+    // ---- Hide in logo if mouse is near cat ----
     const catRect = cat.getBoundingClientRect();
     const catCenterX = catRect.left + catRect.width/2;
     const catCenterY = catRect.top + catRect.height/2;
@@ -140,14 +152,14 @@
 
   function hideInLogo() {
     const logoRect = logo.getBoundingClientRect();
-    // Move cat *behind* logo
+    // hide at bottom of the text
     cat.style.left = (logoRect.left + logoRect.width/2 - 40) + "px";
-    cat.style.top = (logoRect.top + logoRect.height - 20) + "px"; // hidden under logo
+    cat.style.top = (logoRect.top + logoRect.height - 10) + "px";
     hiding = true;
 
-    // Peek after 2 seconds
+    // Peek after 2s
     hideTimer = setTimeout(() => {
-      cat.style.top = (logoRect.top + logoRect.height/2 - 40) + "px"; // peek out from side
+      cat.style.top = (logoRect.top + logoRect.height/2) + "px";
     }, 2000);
 
     // Auto reset after 10s
@@ -161,7 +173,7 @@
     clearTimeout(hideTimer);
     clearTimeout(resetTimer);
     const logoRect = logo.getBoundingClientRect();
-    cat.style.top = (logoRect.top + logoRect.height/2 - 40) + "px";
+    cat.style.top = (logoRect.top + logoRect.height/2) + "px";
     hiding = false;
   }
 
@@ -181,12 +193,6 @@
   document.addEventListener("mouseup", () => {
     dragging = false;
     cat.style.transition = "left 0.8s ease, top 0.8s ease";
-  });
-
-  // ---- Pet bounce ----
-  cat.addEventListener("click", () => {
-    cat.style.animation = "purr 0.4s ease";
-    setTimeout(() => cat.style.animation = "breathe 3s infinite ease-in-out", 400);
   });
 
   // ---- Random pop-up ----

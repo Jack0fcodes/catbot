@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>CatBot</title>
+  <title>CatBot SVG</title>
   <style>
     body {
       margin: 0;
@@ -19,17 +19,12 @@
       background: #444;
       border-radius: 50%;
       z-index: 2;
-      overflow: hidden; /* so cat can slide behind */
+      overflow: hidden;
     }
     #cat {
       position: fixed;
-      width: 80px;
-      height: 80px;
-      background: #fff;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      width: 120px;
+      height: 120px;
       top: 200px;
       left: 200px;
       cursor: grab;
@@ -37,58 +32,17 @@
       z-index: 1;
     }
 
-    /* --- Ears --- */
-    .ear {
-      width: 0;
-      height: 0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-bottom: 25px solid #fff;
-      position: absolute;
-      top: -18px;
-    }
-    .ear.left { left: 8px; transform: rotate(-10deg); }
-    .ear.right { right: 8px; transform: rotate(10deg); }
-
-    /* --- Eyes --- */
+    /* SVG eye blink */
     .eye {
-      width: 20px;
-      height: 20px;
-      background: #000;
-      border-radius: 50%;
-      margin: 0 5px;
-      position: relative;
-      overflow: hidden;
       animation: blink 4s infinite;
+      transform-origin: center;
     }
-    .pupil {
-      width: 10px;
-      height: 10px;
-      background: #fff;
-      border-radius: 50%;
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      transition: transform 0.1s linear;
-    }
-
-    /* --- Blink Animation --- */
     @keyframes blink {
-      0%, 92%, 100% { height: 20px; }
-      95% { height: 2px; }
+      0%, 92%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
     }
 
-    @keyframes purr {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
-    }
-    @keyframes breathe {
-      0%,100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-
-    /* --- Speech bubble --- */
+    /* Speech bubble */
     #bubble {
       position: fixed;
       background: #fff;
@@ -104,19 +58,41 @@
 </head>
 <body>
   <div id="logo"></div>
-  <div id="cat">
-    <div class="ear left"></div>
-    <div class="ear right"></div>
-    <div class="eye"><div class="pupil"></div></div>
-    <div class="eye"><div class="pupil"></div></div>
-  </div>
+
+  <!-- SVG Cat -->
+  <svg id="cat" viewBox="0 0 120 120">
+    <!-- Tail -->
+    <ellipse id="tail" cx="100" cy="80" rx="10" ry="30" fill="#fff"/>
+
+    <!-- Head -->
+    <circle id="head" cx="60" cy="60" r="40" fill="#fff"/>
+
+    <!-- Ears -->
+    <polygon points="35,25 50,10 55,35" fill="#fff"/>
+    <polygon points="85,25 70,10 65,35" fill="#fff"/>
+
+    <!-- Eyes -->
+    <g id="eyes">
+      <circle class="eye" id="leftEye" cx="45" cy="55" r="10" fill="#000"/>
+      <circle class="eye" id="rightEye" cx="75" cy="55" r="10" fill="#000"/>
+
+      <!-- Pupils -->
+      <circle class="pupil" id="leftPupil" cx="45" cy="55" r="4" fill="#fff"/>
+      <circle class="pupil" id="rightPupil" cx="75" cy="55" r="4" fill="#fff"/>
+    </g>
+
+    <!-- Nose -->
+    <polygon points="58,70 62,70 60,74" fill="#000"/>
+  </svg>
+
+  <!-- Speech bubble -->
   <div id="bubble"></div>
 
   <script>
   const cat = document.getElementById("cat");
-  const pupils = document.querySelectorAll(".pupil");
   const logo = document.getElementById("logo");
   const bubble = document.getElementById("bubble");
+  const pupils = [document.getElementById("leftPupil"), document.getElementById("rightPupil")];
 
   let offsetX, offsetY, dragging = false;
   let hiding = false;
@@ -126,19 +102,21 @@
   // ---- Eyes follow mouse ----
   document.addEventListener("mousemove", e => {
     pupils.forEach(pupil => {
-      const rect = pupil.getBoundingClientRect();
-      const dx = e.clientX - (rect.left + rect.width / 2);
-      const dy = e.clientY - (rect.top + rect.height / 2);
+      const eyeX = parseFloat(pupil.getAttribute("cx"));
+      const eyeY = parseFloat(pupil.getAttribute("cy"));
+      const dx = e.clientX - (cat.offsetLeft + eyeX);
+      const dy = e.clientY - (cat.offsetTop + eyeY);
       const angle = Math.atan2(dy, dx);
-      const x = Math.cos(angle) * 5;
-      const y = Math.sin(angle) * 5;
-      pupil.style.transform = `translate(${x}px, ${y}px)`;
+      const x = Math.cos(angle) * 3;
+      const y = Math.sin(angle) * 3;
+      pupil.setAttribute("cx", eyeX + x);
+      pupil.setAttribute("cy", eyeY + y);
     });
 
-    // ---- Hide in logo if mouse is too close ----
-    const catRect = cat.getBoundingClientRect();
-    const catCenterX = catRect.left + catRect.width/2;
-    const catCenterY = catRect.top + catRect.height/2;
+    // Hide if mouse is too close
+    const rect = cat.getBoundingClientRect();
+    const catCenterX = rect.left + rect.width/2;
+    const catCenterY = rect.top + rect.height/2;
     const distX = e.clientX - catCenterX;
     const distY = e.clientY - catCenterY;
     const distance = Math.sqrt(distX*distX + distY*distY);
@@ -152,17 +130,14 @@
 
   function hideInLogo() {
     const logoRect = logo.getBoundingClientRect();
-    // Move cat *behind* logo
-    cat.style.left = (logoRect.left + logoRect.width/2 - 40) + "px";
-    cat.style.top = (logoRect.top + logoRect.height - 20) + "px"; // hidden under logo
+    cat.style.left = (logoRect.left + logoRect.width/2 - 60) + "px";
+    cat.style.top = (logoRect.top + logoRect.height - 40) + "px";
     hiding = true;
 
-    // Peek after 2 seconds
     hideTimer = setTimeout(() => {
-      cat.style.top = (logoRect.top + logoRect.height/2 - 40) + "px"; // peek out from side
+      cat.style.top = (logoRect.top + logoRect.height/2 - 60) + "px";
     }, 2000);
 
-    // Auto reset after 10s
     resetTimer = setTimeout(() => {
       hiding = false;
       randomPopUp();
@@ -173,8 +148,7 @@
     clearTimeout(hideTimer);
     clearTimeout(resetTimer);
     const logoRect = logo.getBoundingClientRect();
-    // Slide out to peek
-    cat.style.top = (logoRect.top + logoRect.height/2 - 40) + "px";
+    cat.style.top = (logoRect.top + logoRect.height/2 - 60) + "px";
     hiding = false;
   }
 
@@ -196,16 +170,12 @@
     cat.style.transition = "left 0.8s ease, top 0.8s ease";
   });
 
-  // ---- Pet bounce ----
+  // ---- Click to talk ----
   cat.addEventListener("click", () => {
-    cat.style.animation = "purr 0.4s ease";
-    setTimeout(() => cat.style.animation = "breathe 3s infinite ease-in-out", 400);
-
-    // --- Show speech bubble ---
-    const messages = ["Meow! 🐾", "Feed me?", "Purr... 😺", "I'm watching you.", "Hire my hooman!"];
+    const messages = ["Meow! 🐾", "Purr... 😺", "Hire my hooman!", "Feed me?", "I'm watching you."];
     bubble.innerText = messages[Math.floor(Math.random()*messages.length)];
     bubble.style.display = "block";
-    bubble.style.left = (cat.offsetLeft + 90) + "px";
+    bubble.style.left = (cat.offsetLeft + 120) + "px";
     bubble.style.top = (cat.offsetTop - 30) + "px";
     setTimeout(() => bubble.style.display = "none", 2500);
   });
@@ -213,8 +183,8 @@
   // ---- Random pop-up ----
   function randomPopUp() {
     if (!dragging && !hiding) {
-      const screenW = window.innerWidth - 100;
-      const screenH = window.innerHeight - 100;
+      const screenW = window.innerWidth - 150;
+      const screenH = window.innerHeight - 150;
       const randomX = Math.random() * screenW;
       const randomY = Math.random() * screenH;
       cat.style.left = randomX + "px";

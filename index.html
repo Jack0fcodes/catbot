@@ -77,6 +77,8 @@
 
   let offsetX, offsetY, dragging = false;
   let hiding = false;
+  let hideTimer = null;
+  let resetTimer = null;
 
   // ---- Eyes follow mouse ----
   document.addEventListener("mousemove", e => {
@@ -99,21 +101,37 @@
     const distance = Math.sqrt(distX*distX + distY*distY);
 
     if (distance < 120 && !hiding) {
-      const logoRect = logo.getBoundingClientRect();
-      cat.style.left = (logoRect.left + logoRect.width/2 - 40) + "px";
-      cat.style.top = (logoRect.top + logoRect.height/2 - 40) + "px";
-      cat.style.opacity = "0";
-      hiding = true;
-
-      setTimeout(() => {
-        cat.style.opacity = "1";
-        cat.style.left = (logoRect.right - 40) + "px";
-        cat.style.top = (logoRect.top + logoRect.height/2 - 40) + "px";
-      }, 1200);
+      hideInLogo();
     } else if (distance >= 180 && hiding) {
-      hiding = false;
+      peekFromLogo();
     }
   });
+
+  function hideInLogo() {
+    const logoRect = logo.getBoundingClientRect();
+    cat.style.left = (logoRect.left + logoRect.width/2 - 40) + "px";
+    cat.style.top = (logoRect.top + logoRect.height/2 - 40) + "px";
+    cat.style.opacity = "0";
+    hiding = true;
+
+    // Peek after 2 seconds
+    hideTimer = setTimeout(() => {
+      cat.style.opacity = "1";
+    }, 2000);
+
+    // Auto reset after 10s
+    resetTimer = setTimeout(() => {
+      hiding = false;
+      randomPopUp();
+    }, 10000);
+  }
+
+  function peekFromLogo() {
+    clearTimeout(hideTimer);
+    clearTimeout(resetTimer);
+    cat.style.opacity = "1";
+    hiding = false;
+  }
 
   // ---- Dragging ----
   cat.addEventListener("mousedown", e => {
@@ -148,6 +166,7 @@
       const randomY = Math.random() * screenH;
       cat.style.left = randomX + "px";
       cat.style.top = randomY + "px";
+      cat.style.opacity = "1";
     }
     setTimeout(randomPopUp, 4000 + Math.random() * 3000);
   }

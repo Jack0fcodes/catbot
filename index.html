@@ -1,90 +1,157 @@
-<script>
-const cat = document.getElementById("cat");
-const pupils = document.querySelectorAll(".pupil");
-const logo = document.getElementById("logo");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CatBot</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #222;
+      overflow: hidden;
+    }
+    #logo {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 100px;
+      height: 100px;
+      background: #444;
+      border-radius: 50%;
+    }
+    #cat {
+      position: fixed;
+      width: 80px;
+      height: 80px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      top: 200px;
+      left: 200px;
+      cursor: grab;
+      transition: left 0.8s ease, top 0.8s ease, opacity 0.5s ease;
+    }
+    .eye {
+      width: 20px;
+      height: 20px;
+      background: #000;
+      border-radius: 50%;
+      margin: 0 5px;
+      position: relative;
+      overflow: hidden;
+    }
+    .pupil {
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      transition: transform 0.1s linear;
+    }
+    @keyframes purr {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    @keyframes breathe {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+  </style>
+</head>
+<body>
+  <div id="logo"></div>
+  <div id="cat">
+    <div class="eye"><div class="pupil"></div></div>
+    <div class="eye"><div class="pupil"></div></div>
+  </div>
 
-let offsetX, offsetY, dragging = false;
-let hiding = false;
+  <script>
+  const cat = document.getElementById("cat");
+  const pupils = document.querySelectorAll(".pupil");
+  const logo = document.getElementById("logo");
 
-// ---- Eyes follow mouse ----
-document.addEventListener("mousemove", e => {
-  pupils.forEach(pupil => {
-    const rect = pupil.getBoundingClientRect();
-    const dx = e.clientX - (rect.left + rect.width / 2);
-    const dy = e.clientY - (rect.top + rect.height / 2);
-    const angle = Math.atan2(dy, dx);
-    const x = Math.cos(angle) * 5;
-    const y = Math.sin(angle) * 5;
-    pupil.style.transform = `translate(${x}px, ${y}px)`;
+  let offsetX, offsetY, dragging = false;
+  let hiding = false;
+
+  // ---- Eyes follow mouse ----
+  document.addEventListener("mousemove", e => {
+    pupils.forEach(pupil => {
+      const rect = pupil.getBoundingClientRect();
+      const dx = e.clientX - (rect.left + rect.width / 2);
+      const dy = e.clientY - (rect.top + rect.height / 2);
+      const angle = Math.atan2(dy, dx);
+      const x = Math.cos(angle) * 5;
+      const y = Math.sin(angle) * 5;
+      pupil.style.transform = `translate(${x}px, ${y}px)`;
+    });
+
+    // ---- Hide in logo if mouse is too close ----
+    const catRect = cat.getBoundingClientRect();
+    const catCenterX = catRect.left + catRect.width/2;
+    const catCenterY = catRect.top + catRect.height/2;
+    const distX = e.clientX - catCenterX;
+    const distY = e.clientY - catCenterY;
+    const distance = Math.sqrt(distX*distX + distY*distY);
+
+    if (distance < 120 && !hiding) {
+      const logoRect = logo.getBoundingClientRect();
+      cat.style.left = (logoRect.left + logoRect.width/2 - 40) + "px";
+      cat.style.top = (logoRect.top + logoRect.height/2 - 40) + "px";
+      cat.style.opacity = "0";
+      hiding = true;
+
+      setTimeout(() => {
+        cat.style.opacity = "1";
+        cat.style.left = (logoRect.right - 40) + "px";
+        cat.style.top = (logoRect.top + logoRect.height/2 - 40) + "px";
+      }, 1200);
+    } else if (distance >= 180 && hiding) {
+      hiding = false;
+    }
   });
 
-  // ---- Hide in logo if mouse is too close ----
-  const catRect = cat.getBoundingClientRect();
-  const catCenterX = catRect.left + catRect.width/2;
-  const catCenterY = catRect.top + catRect.height/2;
-  const distX = e.clientX - catCenterX;
-  const distY = e.clientY - catCenterY;
-  const distance = Math.sqrt(distX*distX + distY*distY);
-
-  if (distance < 120 && !hiding) {
-    const logoRect = logo.getBoundingClientRect();
-    cat.style.left = (logoRect.left + logoRect.width/2 - 50) + "px";
-    cat.style.top = (logoRect.top + logoRect.height/2 - 50) + "px";
-    cat.style.opacity = "0";
-    hiding = true;
-
-    setTimeout(() => {
-      cat.style.transition = "left 1.5s ease, top 1.5s ease, opacity 1s ease";
-      cat.style.opacity = "1";
-      cat.style.left = (logoRect.right - 40) + "px";
-      cat.style.top = (logoRect.top + logoRect.height/2 - 50) + "px";
-    }, 1200);
-  } 
-  else if (distance >= 180 && hiding) {
-    hiding = false;
-  }
-});
-
-// ---- Dragging ----
-cat.addEventListener("mousedown", e => {
-  dragging = true;
-  offsetX = e.clientX - cat.offsetLeft;
-  offsetY = e.clientY - cat.offsetTop;
-  cat.style.transition = "none";
-});
-document.addEventListener("mousemove", e => {
-  if (dragging) {
-    cat.style.left = (e.clientX - offsetX) + "px";
-    cat.style.top = (e.clientY - offsetY) + "px";
-  }
-});
-document.addEventListener("mouseup", () => {
-  dragging = false;
-  cat.style.transition = "left 0.8s ease, top 0.8s ease, opacity 0.5s ease";
-});
-
-// ---- Pet bounce ----
-cat.addEventListener("click", () => {
-  cat.style.animation = "purr 0.4s ease";
-  setTimeout(() => cat.style.animation = "breathe 3s infinite ease-in-out", 400);
-});
-
-// ---- Random pop-up ----
-function randomPopUp() {
-  if (!dragging && !hiding) {  // only if not dragging or hiding
-    const screenW = window.innerWidth - 100;
-    const screenH = window.innerHeight - 100;
-    const randomX = Math.random() * screenW;
-    const randomY = Math.random() * screenH;
-
+  // ---- Dragging ----
+  cat.addEventListener("mousedown", e => {
+    dragging = true;
+    offsetX = e.clientX - cat.offsetLeft;
+    offsetY = e.clientY - cat.offsetTop;
+    cat.style.transition = "none";
+  });
+  document.addEventListener("mousemove", e => {
+    if (dragging) {
+      cat.style.left = (e.clientX - offsetX) + "px";
+      cat.style.top = (e.clientY - offsetY) + "px";
+    }
+  });
+  document.addEventListener("mouseup", () => {
+    dragging = false;
     cat.style.transition = "left 0.8s ease, top 0.8s ease, opacity 0.5s ease";
-    cat.style.left = randomX + "px";
-    cat.style.top = randomY + "px";
-  }
-  // schedule next pop-up
-  setTimeout(randomPopUp, 4000 + Math.random() * 3000); 
-}
+  });
 
-// start random movement
-setTimeout(randomPopUp, 3000);
-</script>
+  // ---- Pet bounce ----
+  cat.addEventListener("click", () => {
+    cat.style.animation = "purr 0.4s ease";
+    setTimeout(() => cat.style.animation = "breathe 3s infinite ease-in-out", 400);
+  });
+
+  // ---- Random pop-up ----
+  function randomPopUp() {
+    if (!dragging && !hiding) {
+      const screenW = window.innerWidth - 100;
+      const screenH = window.innerHeight - 100;
+      const randomX = Math.random() * screenW;
+      const randomY = Math.random() * screenH;
+      cat.style.left = randomX + "px";
+      cat.style.top = randomY + "px";
+    }
+    setTimeout(randomPopUp, 4000 + Math.random() * 3000);
+  }
+  setTimeout(randomPopUp, 3000);
+  </script>
+</body>
+</html>

@@ -8,7 +8,6 @@
       margin: 0;
       height: 100vh;
       background: #222;
-      overflow: hidden;
       display: flex;
       align-items: flex-start;
       justify-content: center;
@@ -24,7 +23,8 @@
       position: relative;
       z-index: 2;
       display: inline-block;
-      overflow: hidden; /* important: lets cat hide *behind* */
+      overflow: hidden; /* lets cat hide behind */
+      padding: 0 40px;
     }
 
     /* Cat container */
@@ -32,11 +32,11 @@
       position: absolute;
       width: 80px;
       height: 80px;
-      bottom: 0; /* baseline inside logo */
-      left: 50%;
-      transform: translateX(-50%);
+      top: 10px; /* aligned with logo text */
+      left: 0;
+      transform: translateX(-100%); /* start hidden to left */
       cursor: grab;
-      transition: left 0.6s ease, top 0.6s ease, transform 0.6s ease;
+      transition: transform 0.6s ease;
       z-index: 1;
     }
 
@@ -100,7 +100,6 @@
       50% { transform: rotate(-15deg); }
       100% { transform: rotate(15deg); }
     }
-
   </style>
 </head>
 <body>
@@ -122,7 +121,8 @@
   const pupils = document.querySelectorAll(".pupil");
   const logo = document.getElementById("logo");
 
-  let hiding = false;
+  let hiding = true;
+  let peeking = false;
 
   // ---- Eyes follow mouse ----
   document.addEventListener("mousemove", e => {
@@ -135,56 +135,60 @@
       const y = Math.sin(angle) * 4;
       pupil.style.transform = `translate(${x}px, ${y}px)`;
     });
-
-    // if cursor is near logo, hide
-    const logoRect = logo.getBoundingClientRect();
-    const cx = e.clientX;
-    const cy = e.clientY;
-    if (cx > logoRect.left-100 && cx < logoRect.right+100 && cy > logoRect.top-100 && cy < logoRect.bottom+100) {
-      hideInLogo();
-    }
   });
 
-  function hideInLogo() {
-    if (hiding) return;
-    hiding = true;
-    cat.style.transform = "translateX(-50%) translateY(100%)"; // slide down inside text
+  // ---- Sneak Peek ----
+  function sneak() {
+    if (peeking) return;
+    peeking = true;
 
-    // Peek sneak sideways after 2s
+    // randomly pick left or right
+    const fromRight = Math.random() > 0.5;
+    if (fromRight) {
+      cat.style.left = "100%"; // move to right side of logo
+      cat.style.transform = "translateX(100%)"; // hidden
+      setTimeout(() => {
+        cat.style.transform = "translateX(20%)"; // peek in
+      }, 100);
+    } else {
+      cat.style.left = "0%"; // left side
+      cat.style.transform = "translateX(-100%)"; // hidden
+      setTimeout(() => {
+        cat.style.transform = "translateX(-20%)"; // peek in
+      }, 100);
+    }
+
+    // hide again after 2s
     setTimeout(() => {
-      cat.style.transform = "translateX(-20%) translateY(40%)"; // sneaky peek from left
+      if (fromRight) {
+        cat.style.transform = "translateX(100%)";
+      } else {
+        cat.style.transform = "translateX(-100%)";
+      }
+      peeking = false;
     }, 2000);
-
-    // back to hiding after 1s
-    setTimeout(() => {
-      cat.style.transform = "translateX(-50%) translateY(100%)";
-    }, 3500);
-
-    // reset to random after 10s
-    setTimeout(() => {
-      hiding = false;
-      randomPopUp();
-    }, 10000);
   }
 
-  // ---- Random pop-up ----
-  function randomPopUp() {
-    if (hiding) return;
-    const screenW = window.innerWidth - 100;
-    const screenH = window.innerHeight - 100;
-    const randomX = Math.random() * screenW;
-    const randomY = Math.random() * screenH;
-    cat.style.position = "fixed"; // escape logo
-    cat.style.left = randomX + "px";
-    cat.style.top = randomY + "px";
-    cat.style.transform = "none";
+  // ---- Auto sneak every 6–10s ----
+  function scheduleSneak() {
     setTimeout(() => {
-      hideInLogo();
-    }, 5000 + Math.random()*4000);
+      sneak();
+      scheduleSneak();
+    }, 6000 + Math.random()*4000);
   }
 
-  // start random pop-up after a delay
-  setTimeout(randomPopUp, 3000);
+  // ---- Click to hide instantly ----
+  cat.addEventListener("click", () => {
+    if (cat.style.left.includes("100%")) {
+      cat.style.transform = "translateX(100%)"; // hide right
+    } else {
+      cat.style.transform = "translateX(-100%)"; // hide left
+    }
+    peeking = false;
+  });
+
+  // start schedule
+  scheduleSneak();
   </script>
 </body>
 </html>

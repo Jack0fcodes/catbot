@@ -36,6 +36,21 @@
       transition: left 0.8s ease, top 0.8s ease;
       z-index: 1;
     }
+
+    /* --- Ears --- */
+    .ear {
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-bottom: 25px solid #fff;
+      position: absolute;
+      top: -18px;
+    }
+    .ear.left { left: 8px; transform: rotate(-10deg); }
+    .ear.right { right: 8px; transform: rotate(10deg); }
+
+    /* --- Eyes --- */
     .eye {
       width: 20px;
       height: 20px;
@@ -44,6 +59,7 @@
       margin: 0 5px;
       position: relative;
       overflow: hidden;
+      animation: blink 4s infinite;
     }
     .pupil {
       width: 10px;
@@ -55,6 +71,13 @@
       left: 5px;
       transition: transform 0.1s linear;
     }
+
+    /* --- Blink Animation --- */
+    @keyframes blink {
+      0%, 92%, 100% { height: 20px; }
+      95% { height: 2px; }
+    }
+
     @keyframes purr {
       0% { transform: scale(1); }
       50% { transform: scale(1.1); }
@@ -64,19 +87,36 @@
       0%,100% { transform: scale(1); }
       50% { transform: scale(1.05); }
     }
+
+    /* --- Speech bubble --- */
+    #bubble {
+      position: fixed;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      max-width: 160px;
+      word-wrap: break-word;
+      display: none;
+      z-index: 3;
+    }
   </style>
 </head>
 <body>
   <div id="logo"></div>
   <div id="cat">
+    <div class="ear left"></div>
+    <div class="ear right"></div>
     <div class="eye"><div class="pupil"></div></div>
     <div class="eye"><div class="pupil"></div></div>
   </div>
+  <div id="bubble"></div>
 
   <script>
   const cat = document.getElementById("cat");
   const pupils = document.querySelectorAll(".pupil");
   const logo = document.getElementById("logo");
+  const bubble = document.getElementById("bubble");
 
   let offsetX, offsetY, dragging = false;
   let hiding = false;
@@ -160,6 +200,14 @@
   cat.addEventListener("click", () => {
     cat.style.animation = "purr 0.4s ease";
     setTimeout(() => cat.style.animation = "breathe 3s infinite ease-in-out", 400);
+
+    // --- Show speech bubble ---
+    const messages = ["Meow! 🐾", "Feed me?", "Purr... 😺", "I'm watching you.", "Hire my hooman!"];
+    bubble.innerText = messages[Math.floor(Math.random()*messages.length)];
+    bubble.style.display = "block";
+    bubble.style.left = (cat.offsetLeft + 90) + "px";
+    bubble.style.top = (cat.offsetTop - 30) + "px";
+    setTimeout(() => bubble.style.display = "none", 2500);
   });
 
   // ---- Random pop-up ----

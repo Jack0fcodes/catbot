@@ -23,8 +23,8 @@
     }
     #cat {
       position: fixed;
-      width: 160px;
-      height: 140px;
+      width: 200px;
+      height: 180px;
       top: 200px;
       left: 200px;
       cursor: grab;
@@ -60,27 +60,31 @@
   <div id="logo"></div>
 
   <!-- SVG Cat -->
-  <svg id="cat" viewBox="0 0 200 150">
+  <svg id="cat" viewBox="0 0 250 200">
     <!-- Tail (behind body) -->
-    <path d="M30 80 Q10 50 30 20" stroke="#bbb" stroke-width="20" fill="none" stroke-linecap="round"/>
+    <path d="M40 110 Q10 70 40 30" stroke="#bbb" stroke-width="25" fill="none" stroke-linecap="round"/>
 
-    <!-- Legs (behind body) -->
+    <!-- Legs (behind body, vertical rounded rectangles) -->
     <g id="legs" fill="#999">
-      <circle cx="70" cy="120" r="15"/>
-      <circle cx="95" cy="120" r="15"/>
-      <circle cx="125" cy="120" r="15"/>
-      <circle cx="150" cy="120" r="15"/>
+      <rect x="70" y="150" width="20" height="40" rx="8" ry="8"/>
+      <rect x="110" y="150" width="20" height="40" rx="8" ry="8"/>
+      <rect x="150" y="150" width="20" height="40" rx="8" ry="8"/>
+      <rect x="190" y="150" width="20" height="40" rx="8" ry="8"/>
     </g>
 
-    <!-- Body (rounded rectangle) -->
-    <rect x="40" y="40" width="120" height="70" rx="35" ry="35" fill="#bbb"/>
+    <!-- Body (bigger rounded rectangle) -->
+    <rect x="50" y="60" width="150" height="100" rx="50" ry="50" fill="#bbb"/>
+
+    <!-- Ears -->
+    <polygon points="80,60 100,20 120,60" fill="#bbb"/>
+    <polygon points="180,60 160,20 140,60" fill="#bbb"/>
 
     <!-- Eyes -->
     <g id="eyes">
-      <circle cx="120" cy="75" r="18" fill="white"/>
-      <circle cx="150" cy="75" r="18" fill="white"/>
-      <circle class="eye" id="leftPupil" cx="120" cy="75" r="8" fill="#000"/>
-      <circle class="eye" id="rightPupil" cx="150" cy="75" r="8" fill="#000"/>
+      <circle cx="130" cy="100" r="22" fill="white"/>
+      <circle cx="170" cy="100" r="22" fill="white"/>
+      <circle class="eye" id="leftPupil" cx="130" cy="100" r="10" fill="#000"/>
+      <circle class="eye" id="rightPupil" cx="170" cy="100" r="10" fill="#000"/>
     </g>
   </svg>
 
@@ -106,8 +110,8 @@
       const dx = e.clientX - (cat.offsetLeft + eyeX);
       const dy = e.clientY - (cat.offsetTop + eyeY);
       const angle = Math.atan2(dy, dx);
-      const x = Math.cos(angle) * 4;
-      const y = Math.sin(angle) * 4;
+      const x = Math.cos(angle) * 5;
+      const y = Math.sin(angle) * 5;
       pupil.setAttribute("cx", eyeX + x);
       pupil.setAttribute("cy", eyeY + y);
     });
@@ -120,21 +124,21 @@
     const distY = e.clientY - catCenterY;
     const distance = Math.sqrt(distX*distX + distY*distY);
 
-    if (distance < 120 && !hiding) {
+    if (distance < 150 && !hiding) {
       hideInLogo();
-    } else if (distance >= 180 && hiding) {
+    } else if (distance >= 200 && hiding) {
       peekFromLogo();
     }
   });
 
   function hideInLogo() {
     const logoRect = logo.getBoundingClientRect();
-    cat.style.left = (logoRect.left + logoRect.width/2 - 80) + "px";
-    cat.style.top = (logoRect.top + logoRect.height - 60) + "px";
+    cat.style.left = (logoRect.left + logoRect.width/2 - 100) + "px";
+    cat.style.top = (logoRect.top + logoRect.height - 80) + "px";
     hiding = true;
 
     hideTimer = setTimeout(() => {
-      cat.style.top = (logoRect.top + logoRect.height/2 - 70) + "px";
+      cat.style.top = (logoRect.top + logoRect.height/2 - 90) + "px";
     }, 2000);
 
     resetTimer = setTimeout(() => {
@@ -147,7 +151,7 @@
     clearTimeout(hideTimer);
     clearTimeout(resetTimer);
     const logoRect = logo.getBoundingClientRect();
-    cat.style.top = (logoRect.top + logoRect.height/2 - 70) + "px";
+    cat.style.top = (logoRect.top + logoRect.height/2 - 90) + "px";
     hiding = false;
   }
 
@@ -174,7 +178,7 @@
     const messages = ["Meow! 🐾", "Purr... 😺", "Hire my hooman!", "Feed me?", "I'm watching you."];
     bubble.innerText = messages[Math.floor(Math.random()*messages.length)];
     bubble.style.display = "block";
-    bubble.style.left = (cat.offsetLeft + 160) + "px";
+    bubble.style.left = (cat.offsetLeft + 200) + "px";
     bubble.style.top = (cat.offsetTop - 30) + "px";
     setTimeout(() => bubble.style.display = "none", 2500);
   });
@@ -182,8 +186,8 @@
   // ---- Random pop-up ----
   function randomPopUp() {
     if (!dragging && !hiding) {
-      const screenW = window.innerWidth - 200;
-      const screenH = window.innerHeight - 160;
+      const screenW = window.innerWidth - 220;
+      const screenH = window.innerHeight - 200;
       const randomX = Math.random() * screenW;
       const randomY = Math.random() * screenH;
       cat.style.left = randomX + "px";

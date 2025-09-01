@@ -23,8 +23,8 @@
     }
     #cat {
       position: fixed;
-      width: 120px;
-      height: 120px;
+      width: 160px;
+      height: 140px;
       top: 200px;
       left: 200px;
       cursor: grab;
@@ -32,7 +32,7 @@
       z-index: 1;
     }
 
-    /* SVG eye blink */
+    /* Eye blink */
     .eye {
       animation: blink 4s infinite;
       transform-origin: center;
@@ -59,30 +59,27 @@
 <body>
   <div id="logo"></div>
 
-  <!-- SVG Cat -->
-  <svg id="cat" viewBox="0 0 120 120">
+  <!-- SVG Cat (chunky style) -->
+  <svg id="cat" viewBox="0 0 200 140">
     <!-- Tail -->
-    <ellipse id="tail" cx="100" cy="80" rx="10" ry="30" fill="#fff"/>
+    <path d="M20 60 Q0 40 20 20" stroke="#bbb" stroke-width="20" fill="none" stroke-linecap="round"/>
 
-    <!-- Head -->
-    <circle id="head" cx="60" cy="60" r="40" fill="#fff"/>
+    <!-- Body -->
+    <ellipse cx="100" cy="70" rx="80" ry="50" fill="#bbb"/>
 
-    <!-- Ears -->
-    <polygon points="35,25 50,10 55,35" fill="#fff"/>
-    <polygon points="85,25 70,10 65,35" fill="#fff"/>
+    <!-- Legs -->
+    <circle cx="60" cy="115" r="15" fill="#999"/>
+    <circle cx="85" cy="115" r="15" fill="#999"/>
+    <circle cx="115" cy="115" r="15" fill="#999"/>
+    <circle cx="140" cy="115" r="15" fill="#999"/>
 
     <!-- Eyes -->
     <g id="eyes">
-      <circle class="eye" id="leftEye" cx="45" cy="55" r="10" fill="#000"/>
-      <circle class="eye" id="rightEye" cx="75" cy="55" r="10" fill="#000"/>
-
-      <!-- Pupils -->
-      <circle class="pupil" id="leftPupil" cx="45" cy="55" r="4" fill="#fff"/>
-      <circle class="pupil" id="rightPupil" cx="75" cy="55" r="4" fill="#fff"/>
+      <circle cx="120" cy="65" r="18" fill="white"/>
+      <circle cx="150" cy="65" r="18" fill="white"/>
+      <circle class="eye" id="leftPupil" cx="120" cy="65" r="8" fill="#000"/>
+      <circle class="eye" id="rightPupil" cx="150" cy="65" r="8" fill="#000"/>
     </g>
-
-    <!-- Nose -->
-    <polygon points="58,70 62,70 60,74" fill="#000"/>
   </svg>
 
   <!-- Speech bubble -->
@@ -107,8 +104,8 @@
       const dx = e.clientX - (cat.offsetLeft + eyeX);
       const dy = e.clientY - (cat.offsetTop + eyeY);
       const angle = Math.atan2(dy, dx);
-      const x = Math.cos(angle) * 3;
-      const y = Math.sin(angle) * 3;
+      const x = Math.cos(angle) * 4;
+      const y = Math.sin(angle) * 4;
       pupil.setAttribute("cx", eyeX + x);
       pupil.setAttribute("cy", eyeY + y);
     });
@@ -130,12 +127,12 @@
 
   function hideInLogo() {
     const logoRect = logo.getBoundingClientRect();
-    cat.style.left = (logoRect.left + logoRect.width/2 - 60) + "px";
-    cat.style.top = (logoRect.top + logoRect.height - 40) + "px";
+    cat.style.left = (logoRect.left + logoRect.width/2 - 80) + "px";
+    cat.style.top = (logoRect.top + logoRect.height - 60) + "px";
     hiding = true;
 
     hideTimer = setTimeout(() => {
-      cat.style.top = (logoRect.top + logoRect.height/2 - 60) + "px";
+      cat.style.top = (logoRect.top + logoRect.height/2 - 70) + "px";
     }, 2000);
 
     resetTimer = setTimeout(() => {
@@ -148,7 +145,7 @@
     clearTimeout(hideTimer);
     clearTimeout(resetTimer);
     const logoRect = logo.getBoundingClientRect();
-    cat.style.top = (logoRect.top + logoRect.height/2 - 60) + "px";
+    cat.style.top = (logoRect.top + logoRect.height/2 - 70) + "px";
     hiding = false;
   }
 
@@ -175,7 +172,7 @@
     const messages = ["Meow! 🐾", "Purr... 😺", "Hire my hooman!", "Feed me?", "I'm watching you."];
     bubble.innerText = messages[Math.floor(Math.random()*messages.length)];
     bubble.style.display = "block";
-    bubble.style.left = (cat.offsetLeft + 120) + "px";
+    bubble.style.left = (cat.offsetLeft + 160) + "px";
     bubble.style.top = (cat.offsetTop - 30) + "px";
     setTimeout(() => bubble.style.display = "none", 2500);
   });
@@ -183,8 +180,8 @@
   // ---- Random pop-up ----
   function randomPopUp() {
     if (!dragging && !hiding) {
-      const screenW = window.innerWidth - 150;
-      const screenH = window.innerHeight - 150;
+      const screenW = window.innerWidth - 200;
+      const screenH = window.innerHeight - 160;
       const randomX = Math.random() * screenW;
       const randomY = Math.random() * screenH;
       cat.style.left = randomX + "px";

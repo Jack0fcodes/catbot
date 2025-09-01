@@ -59,26 +59,28 @@
 <body>
   <div id="logo"></div>
 
-  <!-- SVG Cat (chunky style) -->
-  <svg id="cat" viewBox="0 0 200 140">
-    <!-- Tail -->
-    <path d="M20 60 Q0 40 20 20" stroke="#bbb" stroke-width="20" fill="none" stroke-linecap="round"/>
+  <!-- SVG Cat -->
+  <svg id="cat" viewBox="0 0 200 150">
+    <!-- Tail (behind body) -->
+    <path d="M30 80 Q10 50 30 20" stroke="#bbb" stroke-width="20" fill="none" stroke-linecap="round"/>
 
-    <!-- Body -->
-    <ellipse cx="100" cy="70" rx="80" ry="50" fill="#bbb"/>
+    <!-- Legs (behind body) -->
+    <g id="legs" fill="#999">
+      <circle cx="70" cy="120" r="15"/>
+      <circle cx="95" cy="120" r="15"/>
+      <circle cx="125" cy="120" r="15"/>
+      <circle cx="150" cy="120" r="15"/>
+    </g>
 
-    <!-- Legs -->
-    <circle cx="60" cy="115" r="15" fill="#999"/>
-    <circle cx="85" cy="115" r="15" fill="#999"/>
-    <circle cx="115" cy="115" r="15" fill="#999"/>
-    <circle cx="140" cy="115" r="15" fill="#999"/>
+    <!-- Body (rounded rectangle) -->
+    <rect x="40" y="40" width="120" height="70" rx="35" ry="35" fill="#bbb"/>
 
     <!-- Eyes -->
     <g id="eyes">
-      <circle cx="120" cy="65" r="18" fill="white"/>
-      <circle cx="150" cy="65" r="18" fill="white"/>
-      <circle class="eye" id="leftPupil" cx="120" cy="65" r="8" fill="#000"/>
-      <circle class="eye" id="rightPupil" cx="150" cy="65" r="8" fill="#000"/>
+      <circle cx="120" cy="75" r="18" fill="white"/>
+      <circle cx="150" cy="75" r="18" fill="white"/>
+      <circle class="eye" id="leftPupil" cx="120" cy="75" r="8" fill="#000"/>
+      <circle class="eye" id="rightPupil" cx="150" cy="75" r="8" fill="#000"/>
     </g>
   </svg>
 

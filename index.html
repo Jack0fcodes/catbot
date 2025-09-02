@@ -103,6 +103,12 @@
   let dragging = false, offsetX, offsetY;
   let hiding = false;
 
+  // ---- Initialize pupils at center ----
+  eyes.forEach(eye => {
+    const pupil = eye.group.querySelector(".pupil");
+    pupil.setAttribute("transform", `translate(${eye.cx},${eye.cy})`);
+  });
+
   // ---- Eyes follow mouse ----
   document.addEventListener("mousemove", e => {
     eyes.forEach(eye => {
@@ -115,10 +121,11 @@
       const maxOffset = 6;
       const x = Math.cos(angle) * maxOffset;
       const y = Math.sin(angle) * maxOffset;
-      eye.group.querySelector(".pupil").setAttribute("transform", `translate(${eye.cx + x},${eye.cy + y})`);
+      eye.group.querySelector(".pupil")
+        .setAttribute("transform", `translate(${eye.cx + x},${eye.cy + y})`);
     });
 
-    // Hide/peek
+    // Hide/peek logic
     const rect = cat.getBoundingClientRect();
     const cx = rect.left + rect.width/2;
     const cy = rect.top + rect.height/2;

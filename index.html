@@ -31,9 +31,8 @@
       transition: left 0.8s ease, top 0.8s ease;
       z-index: 1;
     }
-
     /* Eye blink */
-    .eye {
+    .eyeWhite {
       animation: blink 4s infinite;
       transform-origin: center;
     }
@@ -41,7 +40,6 @@
       0%, 92%, 100% { transform: scaleY(1); }
       95% { transform: scaleY(0.1); }
     }
-
     /* Speech bubble */
     #bubble {
       position: fixed;
@@ -61,30 +59,30 @@
 
   <!-- SVG Cat -->
   <svg id="cat" viewBox="0 0 250 200">
-    <!-- Tail (behind body) -->
+    <!-- Tail -->
     <path d="M40 110 Q10 70 40 30" stroke="#bbb" stroke-width="25" fill="none" stroke-linecap="round"/>
-
-    <!-- Legs (behind body, vertical rounded rectangles) -->
-    <g id="legs" fill="#999">
+    <!-- Legs -->
+    <g fill="#999">
       <rect x="70" y="150" width="20" height="40" rx="8" ry="8"/>
       <rect x="110" y="150" width="20" height="40" rx="8" ry="8"/>
       <rect x="150" y="150" width="20" height="40" rx="8" ry="8"/>
       <rect x="190" y="150" width="20" height="40" rx="8" ry="8"/>
     </g>
-
-    <!-- Body (bigger rounded rectangle) -->
+    <!-- Body -->
     <rect x="50" y="60" width="150" height="100" rx="50" ry="50" fill="#bbb"/>
-
     <!-- Ears -->
     <polygon points="80,60 100,20 120,60" fill="#bbb"/>
     <polygon points="180,60 160,20 140,60" fill="#bbb"/>
-
     <!-- Eyes -->
     <g id="eyes">
-      <circle cx="130" cy="100" r="22" fill="white"/>
-      <circle cx="170" cy="100" r="22" fill="white"/>
-      <circle class="eye" id="leftPupil" cx="130" cy="100" r="10" fill="#000"/>
-      <circle class="eye" id="rightPupil" cx="170" cy="100" r="10" fill="#000"/>
+      <g id="leftEye">
+        <circle class="eyeWhite" cx="130" cy="100" r="22" fill="white"/>
+        <circle class="pupil" r="10" fill="black"/>
+      </g>
+      <g id="rightEye">
+        <circle class="eyeWhite" cx="170" cy="100" r="22" fill="white"/>
+        <circle class="pupil" r="10" fill="black"/>
+      </g>
     </g>
   </svg>
 
@@ -95,40 +93,39 @@
   const cat = document.getElementById("cat");
   const logo = document.getElementById("logo");
   const bubble = document.getElementById("bubble");
-  const pupils = [document.getElementById("leftPupil"), document.getElementById("rightPupil")];
+  const leftEye = document.getElementById("leftEye");
+  const rightEye = document.getElementById("rightEye");
+  const eyes = [
+    { group: leftEye, cx: 130, cy: 100 },
+    { group: rightEye, cx: 170, cy: 100 }
+  ];
 
-  let offsetX, offsetY, dragging = false;
+  let dragging = false, offsetX, offsetY;
   let hiding = false;
-  let hideTimer = null;
-  let resetTimer = null;
 
   // ---- Eyes follow mouse ----
   document.addEventListener("mousemove", e => {
-    pupils.forEach(pupil => {
-      const eyeX = parseFloat(pupil.getAttribute("cx"));
-      const eyeY = parseFloat(pupil.getAttribute("cy"));
-      const dx = e.clientX - (cat.offsetLeft + eyeX);
-      const dy = e.clientY - (cat.offsetTop + eyeY);
+    eyes.forEach(eye => {
+      const rect = cat.getBoundingClientRect();
+      const eyeX = rect.left + eye.cx;
+      const eyeY = rect.top + eye.cy;
+      const dx = e.clientX - eyeX;
+      const dy = e.clientY - eyeY;
       const angle = Math.atan2(dy, dx);
-      const x = Math.cos(angle) * 5;
-      const y = Math.sin(angle) * 5;
-      pupil.setAttribute("cx", eyeX + x);
-      pupil.setAttribute("cy", eyeY + y);
+      const maxOffset = 6;
+      const x = Math.cos(angle) * maxOffset;
+      const y = Math.sin(angle) * maxOffset;
+      eye.group.querySelector(".pupil").setAttribute("transform", `translate(${eye.cx + x},${eye.cy + y})`);
     });
 
-    // Hide if mouse is too close
+    // Hide/peek
     const rect = cat.getBoundingClientRect();
-    const catCenterX = rect.left + rect.width/2;
-    const catCenterY = rect.top + rect.height/2;
-    const distX = e.clientX - catCenterX;
-    const distY = e.clientY - catCenterY;
-    const distance = Math.sqrt(distX*distX + distY*distY);
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    const distance = Math.hypot(e.clientX - cx, e.clientY - cy);
 
-    if (distance < 150 && !hiding) {
-      hideInLogo();
-    } else if (distance >= 200 && hiding) {
-      peekFromLogo();
-    }
+    if (distance < 150 && !hiding) hideInLogo();
+    if (distance >= 200 && hiding) peekFromLogo();
   });
 
   function hideInLogo() {
@@ -136,20 +133,9 @@
     cat.style.left = (logoRect.left + logoRect.width/2 - 100) + "px";
     cat.style.top = (logoRect.top + logoRect.height - 80) + "px";
     hiding = true;
-
-    hideTimer = setTimeout(() => {
-      cat.style.top = (logoRect.top + logoRect.height/2 - 90) + "px";
-    }, 2000);
-
-    resetTimer = setTimeout(() => {
-      hiding = false;
-      randomPopUp();
-    }, 10000);
+    setTimeout(() => hiding = false, 8000);
   }
-
   function peekFromLogo() {
-    clearTimeout(hideTimer);
-    clearTimeout(resetTimer);
     const logoRect = logo.getBoundingClientRect();
     cat.style.top = (logoRect.top + logoRect.height/2 - 90) + "px";
     hiding = false;
@@ -186,12 +172,10 @@
   // ---- Random pop-up ----
   function randomPopUp() {
     if (!dragging && !hiding) {
-      const screenW = window.innerWidth - 220;
-      const screenH = window.innerHeight - 200;
-      const randomX = Math.random() * screenW;
-      const randomY = Math.random() * screenH;
-      cat.style.left = randomX + "px";
-      cat.style.top = randomY + "px";
+      const maxX = window.innerWidth - 220;
+      const maxY = window.innerHeight - 200;
+      cat.style.left = Math.random() * maxX + "px";
+      cat.style.top = Math.random() * maxY + "px";
     }
     setTimeout(randomPopUp, 4000 + Math.random() * 3000);
   }

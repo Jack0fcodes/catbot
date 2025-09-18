@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CatBot SVG</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #222;
+      overflow: hidden;
+    }
+    #logo {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 100px;
+      height: 100px;
+      background: #444;
+      border-radius: 50%;
+      z-index: 2;
+      overflow: hidden;
+    }
+    #cat {
+      position: fixed;
+      width: 200px;
+      height: 180px;
+      top: 200px;
+      left: 200px;
+      cursor: grab;
+      transition: left 0.8s ease, top 0.8s ease;
+      z-index: 1;
+    }
+    /* Eye blink */
+    .eyeWhite {
+      animation: blink 4s infinite;
+      transform-origin: center;
+    }
+    @keyframes blink {
+      0%, 92%, 100% { transform: scaleY(1); }
+      95% { transform: scaleY(0.1); }
+    }
+    /* Speech bubble */
+    #bubble {
+      position: fixed;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      max-width: 160px;
+      word-wrap: break-word;
+      display: none;
+      z-index: 3;
+    }
+  </style>
+</head>
+<body>
+  <div id="logo"></div>
+
+  <!-- SVG Cat -->
+  <svg id="cat" viewBox="0 0 250 200">
+    <!-- Tail -->
+    <path d="M40 110 Q10 70 40 30" stroke="#bbb" stroke-width="25" fill="none" stroke-linecap="round"/>
+    <!-- Legs -->
+    <g fill="#999">
+      <rect x="70" y="150" width="20" height="40" rx="8" ry="8"/>
+      <rect x="110" y="150" width="20" height="40" rx="8" ry="8"/>
+      <rect x="150" y="150" width="20" height="40" rx="8" ry="8"/>
+      <rect x="190" y="150" width="20" height="40" rx="8" ry="8"/>
+    </g>
+    <!-- Body -->
+    <rect x="50" y="60" width="150" height="100" rx="50" ry="50" fill="#bbb"/>
+    <!-- Ears -->
+    <polygon points="80,60 100,20 120,60" fill="#bbb"/>
+    <polygon points="180,60 160,20 140,60" fill="#bbb"/>
+    <!-- Eyes -->
+    <g id="eyes">
+      <g id="leftEye">
+        <circle class="eyeWhite" cx="130" cy="100" r="22" fill="white"/>
+        <circle class="pupil" r="10" fill="black"/>
+      </g>
+      <g id="rightEye">
+        <circle class="eyeWhite" cx="170" cy="100" r="22" fill="white"/>
+        <circle class="pupil" r="10" fill="black"/>
+      </g>
+    </g>
+  </svg>
+
+  <!-- Speech bubble -->
+  <div id="bubble"></div>
+
+  <script>
+  const cat = document.getElementById("cat");
+  const logo = document.getElementById("logo");
+  const bubble = document.getElementById("bubble");
+  const leftEye = document.getElementById("leftEye");
+  const rightEye = document.getElementById("rightEye");
+  const eyes = [
+    { group: leftEye, cx: 130, cy: 100 },
+    { group: rightEye, cx: 170, cy: 100 }
+  ];
+
+  let dragging = false, offsetX, offsetY;
+  let hiding = false;
+
+  // ---- Initialize pupils at center ----
+  eyes.forEach(eye => {
+    const pupil = eye.group.querySelector(".pupil");
+    pupil.setAttribute("transform", `translate(${eye.cx},${eye.cy})`);
+  });
+
+  // ---- Eyes follow mouse ----
+  document.addEventListener("mousemove", e => {
+    eyes.forEach(eye => {
+      const rect = cat.getBoundingClientRect();
+      const eyeX = rect.left + eye.cx;
+      const eyeY = rect.top + eye.cy;
+      const dx = e.clientX - eyeX;
+      const dy = e.clientY - eyeY;
+      const angle = Math.atan2(dy, dx);
+      const maxOffset = 6;
+      const x = Math.cos(angle) * maxOffset;
+      const y = Math.sin(angle) * maxOffset;
+      eye.group.querySelector(".pupil")
+        .setAttribute("transform", `translate(${eye.cx + x},${eye.cy + y})`);
+    });
+
+    // Hide/peek logic
+    const rect = cat.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
+    const distance = Math.hypot(e.clientX - cx, e.clientY - cy);
+
+    if (distance < 150 && !hiding) hideInLogo();
+    if (distance >= 200 && hiding) peekFromLogo();
+  });
+
+  function hideInLogo() {
+    const logoRect = logo.getBoundingClientRect();
+    cat.style.left = (logoRect.left + logoRect.width/2 - 100) + "px";
+    cat.style.top = (logoRect.top + logoRect.height - 80) + "px";
+    hiding = true;
+    setTimeout(() => hiding = false, 8000);
+  }
+  function peekFromLogo() {
+    const logoRect = logo.getBoundingClientRect();
+    cat.style.top = (logoRect.top + logoRect.height/2 - 90) + "px";
+    hiding = false;
+  }
+
+  // ---- Dragging ----
+  cat.addEventListener("mousedown", e => {
+    dragging = true;
+    offsetX = e.clientX - cat.offsetLeft;
+    offsetY = e.clientY - cat.offsetTop;
+    cat.style.transition = "none";
+  });
+  document.addEventListener("mousemove", e => {
+    if (dragging) {
+      cat.style.left = (e.clientX - offsetX) + "px";
+      cat.style.top = (e.clientY - offsetY) + "px";
+    }
+  });
+  document.addEventListener("mouseup", () => {
+    dragging = false;
+    cat.style.transition = "left 0.8s ease, top 0.8s ease";
+  });
+
+  // ---- Click to talk ----
+  cat.addEventListener("click", () => {
+    const messages = ["Meow! 🐾", "Purr... 😺", "Hire my hooman!", "Feed me?", "I'm watching you."];
+    bubble.innerText = messages[Math.floor(Math.random()*messages.length)];
+    bubble.style.display = "block";
+    bubble.style.left = (cat.offsetLeft + 200) + "px";
+    bubble.style.top = (cat.offsetTop - 30) + "px";
+    setTimeout(() => bubble.style.display = "none", 2500);
+  });
+
+  // ---- Random pop-up ----
+  function randomPopUp() {
+    if (!dragging && !hiding) {
+      const maxX = window.innerWidth - 220;
+      const maxY = window.innerHeight - 200;
+      cat.style.left = Math.random() * maxX + "px";
+      cat.style.top = Math.random() * maxY + "px";
+    }
+    setTimeout(randomPopUp, 4000 + Math.random() * 3000);
+  }
+  setTimeout(randomPopUp, 3000);
+  </script>
+</body>
+</html>

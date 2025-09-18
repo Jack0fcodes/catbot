@@ -31,6 +31,16 @@
       transition: left 0.8s ease, top 0.8s ease;
       z-index: 1;
     }
+
+    /* Tail wave animation */
+    @keyframes tailWave {
+      0%, 100% { d: path("M40 110 Q10 70 40 30"); }
+      50% { d: path("M40 110 Q20 90 60 40"); }
+    }
+    #tail {
+      animation: tailWave 2s infinite ease-in-out;
+    }
+
     /* Eye blink */
     .eyeWhite {
       animation: blink 4s infinite;
@@ -59,8 +69,9 @@
 
   <!-- SVG Cat -->
   <svg id="cat" viewBox="0 0 250 200">
-    <!-- Tail -->
-    <path d="M40 110 Q10 70 40 30" stroke="#bbb" stroke-width="25" fill="none" stroke-linecap="round"/>
+    <!-- Tail (animated path) -->
+    <path id="tail" d="M40 110 Q10 70 40 30" stroke="#bbb" stroke-width="25" fill="none" stroke-linecap="round"/>
+    
     <!-- Legs -->
     <g fill="#999">
       <rect x="70" y="150" width="20" height="40" rx="8" ry="8"/>
